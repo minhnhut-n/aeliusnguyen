@@ -173,11 +173,28 @@ cho process tiếp sau.
 - Task Uninterruptible: task không được wake thông thường do đang đợi kernel
   operation/resource cần thiết. Phải thông qua kernel scheduler.
 
+Vòng hồi tiếp RUNNING ↔ RUNNABLE (qua SLEEPING khi đợi I/O):
+
 .. code-block:: text
 
-   ┌───────────┐         ┌──────────┐         ┌─────────────────┐         ┌─────────────────┐         ┌────────────┐         ┌─────────────┐         ┌───────────┐
-   │  RUNNING  │ ───────►│  read()  │ ───────►│ waiting for I/O │ ───────►│  I/O completes  │ ───────►│  RUNNABLE  │ ───────►│  scheduler  │ ───────►│  RUNNING  │
-   └───────────┘         └──────────┘         └─────────────────┘         └─────────────────┘         └────────────┘         └─────────────┘         └───────────┘
+                           sleep / wait (read, wait_event)
+                      +---------------------------------------+
+                      |                                       v
+                +-------------+  I/O complete / wakeup  +------------+  scheduler / dispatch  +-----------+
+                |   SLEEPING  | -----------------------> |  RUNNABLE  | ---------------------> |  RUNNING  |
+                |  waiting    |                         | TASK_RUNNING|                         | TASK_RUNNING|
+                |  for I/O    | <----------------------- | in runqueue | <--------------------- |  on CPU   |
+                +-------------+   sleep / block         +------------+  preempt / timeslice    +-----------+
+                      ^                                       |                                       |
+                      |                                       +---------------------------------------+
+                      +-------------------------------------------------------------------------------+
+                                   RUNNING -> read() -> SLEEPING -> RUNNABLE -> RUNNING
+
+Giải thích: cả RUNNABLE và RUNNING trong Linux đều là TASK_RUNNING,
+chỉ khác là đã được scheduler cho lên CPU hay còn nằm trong runqueue.
+Vì vậy chúng tạo thành một vòng kín: RUNNABLE -> RUNNING -> RUNNABLE,
+con đường RUNNING -> SLEEPING -> RUNNABLE -> RUNNING là vòng hồi tiếp
+phụ khi task phải đợi I/O.
 
 **Về trạng thái Zombie:**
 
