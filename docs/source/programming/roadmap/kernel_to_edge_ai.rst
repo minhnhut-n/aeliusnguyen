@@ -2,21 +2,50 @@
 Kernel to Edge AI
 ===================
 
-:Tác giả: Kỹ sư Performance / Kernel / Edge AI Systems
-:Ngày tạo: Tháng 9, 2026
-:Trạng thái: Đang thực hiện
-:Định hướng cốt lõi: Tận dụng thế mạnh chuyên sâu về Kernel (Scheduler EEVDF/CFS, ZRAM, Memory Compression, Performance/Boost Service) để chuyển hướng thành System / Performance AI Engineer. Tập trung tối ưu hóa mô hình AI, Inference Engine, Latency, Memory và Power trên phần cứng thực tế.
-
-.. contents:: Mục lục
+.. contents:: Nội dung chính
    :depth: 2
    :local:
 
-.. _danh-gia-profile:
+.. grid:: 1 1 2 2
+   :gutter: 3
+
+   .. grid-item-card:: :octicon:`rocket` Định hướng cốt lõi
+      :shadow: md
+
+      Tận dụng thế mạnh **Kernel** (Scheduler EEVDF/CFS, ZRAM,
+      Memory Compression, Boost Service) để trở thành
+      **System / Performance AI Engineer** — tối ưu Inference,
+      Latency, Memory và Power trên phần cứng thực tế.
+
+   .. grid-item-card:: :octicon:`info` Thông tin
+      :shadow: md
+
+      .. list-table::
+         :widths: 30 70
+         :header-rows: 0
+
+         * - Tác giả
+           - Kỹ sư Performance / Kernel / Edge AI Systems
+         * - Ngày tạo
+           - Tháng 9, 2026
+         * - Trạng thái
+           - :bdg-warning:`Đang thực hiện`
+
+------
 
 1. Profile and Strengths
-=============================================================
+------------------------
 
-Hầu hết kỹ sư AI hiện tại đi lên từ mảng Software/Data Science, giỏi huấn luyện mô hình nhưng thường gặp khó khăn lớn khi triển khai (Deployment) và tối ưu hạ tầng thực thi. Điểm mạnh cốt lõi của bạn nằm ở tầng phần cứng, hệ điều hành và tối ưu hiệu năng.
+.. grid:: 1
+   :gutter: 2
+
+   .. grid-item-card:: 💡 Lợi thế của bạn
+      :shadow: sm
+      :class-card: sd-bg-light
+
+      Hầu hết kỹ sư AI đi lên từ Software/Data Science — giỏi training
+      nhưng yếu khi **deploy & tối ưu hạ tầng**. Điểm mạnh của bạn nằm ở
+      **phần cứng, OS và hiệu năng** — đúng thứ Edge AI đang thiếu.
 
 .. list-table:: Ánh xạ Kỹ năng từ Kernel/System sang Edge AI
    :widths: 35 65
@@ -25,93 +54,120 @@ Hầu hết kỹ sư AI hiện tại đi lên từ mảng Software/Data Science,
    * - Kỹ năng Kernel/System hiện tại
      - Ánh xạ sang Kỹ năng Edge AI / AI Systems
    * - **Scheduler (EEVDF / CFS) & Boost Service**
-     - **Heterogeneous Task Scheduling:** Phân phối luồng Inference tối ưu giữa CPU - GPU - NPU, kiểm soát Latency/Jitter, cô lập CPU (``isolcpus``), quản lý Thread Affinity và ``SCHED_FIFO`` cho luồng AI thời gian thực.
+     - **Heterogeneous Scheduling:** chia luồng Inference giữa CPU-GPU-NPU,
+       kiểm soát Latency/Jitter, ``isolcpus``, Affinity, ``SCHED_FIFO``.
    * - **ZRAM & Memory Compression**
-     - **Memory-bound AI Optimization:** Tối ưu Memory Footprint, Memory Bandwidth, hỗ trợ nén KV Cache, hiểu sâu về cơ chế Quantization (INT8/INT4), Pruning và Memory Allocation.
+     - **Memory-bound Optimization:** Memory Footprint/Bandwidth,
+       nén KV Cache, Quantization (INT8/INT4), Pruning.
    * - **System Overview & Root-cause Debugging**
-     - **Inference Bottleneck Profiling:** Nhận diện nhanh các điểm nghẽn hiệu năng như CPU Cache Thrashing, Memory Bandwidth Bottlenecks, Thermal Throttling và Latency Spikes.
-
-.. _dieu-chinh-du-an:
+     - **Bottleneck Profiling:** Cache Thrashing, Memory Bandwidth,
+       Thermal Throttling, Latency Spikes.
 
 2. Strategy & Project Re-alignment
-============================================================
+-----------------------------------
 
-Để khắc phục tình trạng bị quá tải (overwhelmed) và phân tán nguồn lực, hệ thống lại các ý tưởng dự án như sau:
+Chống quá tải và phân tán nguồn lực — hệ thống lại dự án như sau:
 
-- **[ĐÓNG GÓI & DỪNG] ESP32 Dashboard & RF24 HAL (C, Singleton, Event-driven):**
-  Đã hoàn thành xuất sắc. Đóng gói code, viết README đẹp trên GitHub để làm Portfolio chứng minh tư duy C Clean/Design Pattern.
-- **[TẠM DỪNG / LỌC BỎ] ESP32-P4 Android Auto:**
-  Tốn nhiều thời gian cho phần Integration/Protocol USB Host/Display, chệch hướng khỏi mục tiêu AI Systems.
-- **[TẬP TRUNG 100%] Edge AI Translate / Audio Processing System:**
-  Dự án đinh kết hợp trọn vẹn giữa Audio Real-time Pipeline, Memory/Latency Optimization và AI Inference.
+.. grid:: 1 1 1 3
+   :gutter: 3
 
-.. _du-an-dinh:
+   .. grid-item-card:: :octicon:`package` Đóng gói & Dừng
+      :shadow: md
 
-3. Main Project: Edge AI Translate / Audio Processing System
-============================================================
+      **ESP32 Dashboard & RF24 HAL** (C, Singleton, Event-driven).
+      Đã hoàn thành — đóng gói code, viết README đẹp làm Portfolio
+      C Clean / Design Pattern.
 
-Dự án này là minh chứng rõ nhất cho khả năng kết hợp giữa **System Engineering** và **Edge AI**.
+   .. grid-item-card:: :octicon:`no-entry` Tạm dừng / Lọc bỏ
+      :shadow: md
 
-3.1 Kiến trúc Hệ thống 3 Tầng
--------------------------------
+      **ESP32-P4 Android Auto.** Tốn thời gian cho USB Host/Display
+      integration — chệch khỏi mục tiêu AI Systems.
 
-1. **Tầng Frontend (Microcontroller / DSP):**
-   - Dùng ESP32-S3 / ESP32-P4 thu âm qua I2S Microphone.
-   - Tích hợp mô hình TinyML cực nhẹ (TFLite Micro) để làm Voice Activity Detection (VAD) hoặc Keyword Spotting (KWS), lọc nhiễu ban đầu.
+   .. grid-item-card:: :octicon:`rocket` Tập trung 100%
+      :shadow: md
 
-2. **Tầng Processing Pipeline (Embedded Linux / Host System):**
-   - Đưa luồng Audio qua PipeWire / ALSA.
-   - Chạy mô hình Whisper STT đã được nén (INT8 Quantized / ONNX Runtime / ``whisper.cpp``).
+      **Edge AI Translate / Audio Processing System** — dự án đinh,
+      kết hợp Audio Pipeline + Memory/Latency Optimization + Inference.
 
-3. **Tầng System Tuning (Thế mạnh Kernel của bạn):**
-   - **Optimize Latency:** Chỉnh ``SCHED_FIFO``, gán CPU Affinity (Taskset/Isolcpus) cho thread Inference để đạt Zero-latency jitter.
-   - **Optimize Memory:** Sử dụng ``mmap``, quản lý Ring Buffer, tối ưu Memory Footprint và nén Cache tương tự tư duy ZRAM.
+3. Main Project: Edge AI Translate / Audio Processing
+----------------------------------------------------------
 
-.. _lo-trinh-5-buoc:
+Minh chứng rõ nhất cho khả năng kết hợp **System Engineering + Edge AI**.
 
-4. Five paths to Edge AI
-========================
+.. grid:: 1 1 1 3
+   :gutter: 3
 
-4.1 Bước 1: Nắm AI Nền tảng vừa đủ
-----------------------------------
+   .. grid-item-card:: :octicon:`device-camera` Tầng 1 — Frontend (MCU/DSP)
+      :shadow: md
 
-- **Công cụ:** Python, NumPy, Pandas.
-- **Kiến thức:** Xác suất thống kê cơ bản, Classification, Regression, Overfitting, Metrics (Accuracy, Precision, Recall, Latency).
-- **Mục tiêu:** Hiểu bản chất cách mô hình vận hành và đánh giá được chất lượng mô hình.
+      ESP32-S3/P4 thu âm qua **I2S Mic** + TinyML
+      (TFLite Micro) làm **VAD / Keyword Spotting**, lọc nhiễu đầu vào.
 
-4.2 Bước 2: Deep Learning cho Tín hiệu & Thị giác
----------------------------------------------------
+   .. grid-item-card:: :octicon:`pulse` Tầng 2 — Processing Pipeline
+      :shadow: md
 
-- **Framework:** PyTorch (Dùng để thử nghiệm và export mô hình).
-- **Mô hình:** 1D-CNN, RNN/LSTM cho dữ liệu chuỗi/âm thanh; CNN cho hình ảnh.
-- **Thực hành sát Nhúng:** Keyword Spotting (KWS), Gesture Recognition từ IMU, Anomaly Detection cho động cơ.
+      Audio qua **PipeWire / ALSA** → Whisper STT đã nén
+      (**INT8 / ONNX Runtime /** ``whisper.cpp``).
 
-4.3 Bước 3: Tối ưu & Nén mô hình xuống Thiết bị biên (Edge Conversion)
-----------------------------------------------------------------------
+   .. grid-item-card:: :octicon:`zap` Tầng 3 — System Tuning (Kernel)
+      :shadow: md
 
-- **Công cụ:** ONNX, TensorFlow Lite / TFLite Micro, ``llama.cpp`` / ``whisper.cpp``.
-- **Kỹ thuật:** Quantization (INT8 / INT4), Pruning, Graph Fusing.
-- **Kỹ năng Đánh đổi (Trade-off):** Cân bằng giữa Accuracy | Latency | RAM/Flash | Power Consumption.
+      **Latency:** ``SCHED_FIFO`` + CPU Affinity (taskset/isolcpus).
+      **Memory:** ``mmap`` + Ring Buffer + tư duy ZRAM.
 
-4.4 Bước 4: Triển khai & Tối ưu trên Nền tảng Phần cứng
---------------------------------------------------------
+4. Five Paths to Edge AI
+------------------------
 
-- **MCU Level:** STM32, ESP32-S3/P4 sử dụng TFLite Micro, CMSIS-NN.
-- **Embedded Linux / SoC:** Raspberry Pi, NVIDIA Jetson, Orange Pi sử dụng ONNX Runtime, TensorRT, OpenVINO.
-- **Hardware Acceleration:** Tương tác với NPU/GPU drivers, SIMD/NEON instructions.
+.. grid:: 1 1 2 2
+   :gutter: 3
 
-4.5 Bước 5: MLOps cho Thiết bị thực & System Profiling
--------------------------------------------------------
+   .. grid-item-card:: :octicon:`mortar-board` Bước 1 — AI nền tảng
+      :shadow: sm
 
-- **System Tools:** Dùng ``perf``, ``gprof``, ``valgrind``, ``ftrace`` để đo đạc nghẽn bộ nhớ/CPU khi Inference.
-- **Edge MLOps:** Model Versioning, Secure OTA Update (Cập nhật mô hình an toàn), Data Drift Detection, Privacy.
+      Python, NumPy, Pandas. Xác suất thống kê, Classification/Regression,
+      Overfitting, Metrics (Accuracy, Precision, Recall, Latency).
+
+   .. grid-item-card:: :octicon:`pulse` Bước 2 — Deep Learning tín hiệu
+      :shadow: sm
+
+      **PyTorch** để thử nghiệm & export. 1D-CNN, RNN/LSTM (audio),
+      CNN (ảnh). Bài sát nhúng: KWS, Gesture từ IMU, Anomaly Detection.
+
+   .. grid-item-card:: :octicon:`package` Bước 3 — Edge Conversion
+      :shadow: sm
+
+      ONNX, TFLite / TFLite Micro, ``llama.cpp`` / ``whisper.cpp``.
+      Quantization (INT8/INT4), Pruning, Graph Fusing.
+      Trade-off: Accuracy | Latency | RAM/Flash | Power.
+
+   .. grid-item-card:: :octicon:`cpu` Bước 4 — Deploy & tối ưu HW
+      :shadow: sm
+
+      **MCU:** STM32, ESP32-S3/P4 (TFLite Micro, CMSIS-NN).
+      **SoC:** RPi, Jetson, Orange Pi (ONNX RT, TensorRT, OpenVINO).
+      NPU/GPU drivers, SIMD/NEON.
+
+   .. grid-item-card:: :octicon:`graph` Bước 5 — MLOps & Profiling
+      :shadow: sm
+
+      ``perf``, ``ftrace``, ``valgrind`` đo nghẽn CPU/Mem khi inference.
+      Versioning, Secure OTA, Data Drift Detection, Privacy.
 
 .. _linux-roadmap:
 
-5. Just-In-Time (JIT) Learning: 20 Level Linux Roadmap  
-======================================================
+5. JIT Learning: 20 Level Linux Roadmap
+---------------------------------------
 
-Không học tuần tự từ Level 0 đến Level 20 để tránh chán nản và ngợp kiến thức. Áp dụng phương pháp **Just-In-Time (JIT) Learning**, chỉ đào sâu các Level trực tiếp phục vụ cho Performance & AI Systems.
+.. grid:: 1
+   :gutter: 2
+
+   .. grid-item-card:: 💡 Đừng học tuần tự — học JIT
+      :shadow: sm
+      :class-card: sd-bg-light
+
+      Đừng học Level 0 → 20. Áp dụng **Just-In-Time (JIT) Learning**,
+      chỉ đào sâu Level phục vụ trực tiếp Performance & AI Systems.
 
 .. list-table:: Định hướng phân bổ 20 Level Linux
    :widths: 30 20 50
@@ -119,33 +175,33 @@ Không học tuần tự từ Level 0 đến Level 20 để tránh chán nản v
 
    * - Nhóm Level Linux
      - Ưu tiên
-     - Mục tiêu ứng dụng cho Edge AI Systems
+     - Mục tiêu cho Edge AI Systems
    * - **Level 1: System Programming**
-     - RẤT CAO
-     - Quản lý Thread, POSIX Mutex, Shared Memory, IPC, Signal handling cho Pipeline Audio/AI.
-   * - **Level 5 - 8: Kernel Modules, Char Driver, Interrupt, Platform Driver**
-     - TRUNG BÌNH
-     - Viết/Sửa driver cho cảm biến I2S Mic, Camera, NPU HAL Driver đơn giản.
-   * - **Level 9 - 10: Kernel Memory & Synchronization**
-     - RẤT CAO
-     - Hiểu Page Allocation, DMA Buffers, Zero-copy Memory, Lock-free Queues để truyền dữ liệu cho mô hình AI nhanh nhất.
-   * - **Level 11 & 16: Kernel Debug & Performance Tuning**
-     - RẤT CAO
-     - Sử dụng ``perf``, ``ebpf``, ``ftrace``, ``tracepoints`` để profiling và loại bỏ Latency Spikes khi Inference.
+     - :bdg-danger:`RẤT CAO`
+     - Thread, POSIX Mutex, Shared Memory, IPC, Signal cho Pipeline Audio/AI.
+   * - **Level 5–8: Module, Char Driver, Interrupt, Platform**
+     - :bdg:`TRUNG BÌNH`
+     - Viết/sửa driver I2S Mic, Camera, NPU HAL đơn giản.
+   * - **Level 9–10: Memory & Synchronization**
+     - :bdg-danger:`RẤT CAO`
+     - Page Allocation, DMA Buffers, Zero-copy, Lock-free Queues.
+   * - **Level 11 & 16: Debug & Performance**
+     - :bdg-danger:`RẤT CAO`
+     - ``perf``, ``eBPF``, ``ftrace``, ``tracepoints`` trị Latency Spikes.
    * - **Level 15: Power Management**
-     - RẤT CAO
-     - Quản lý DVFS, Thermal Throttling khi mô hình AI bắt đầu ngốn CPU/NPU trên thiết bị pin.
-   * - **Level 17 - 19: Buildroot, Yocto, Bootloader**
-     - CƠ BẢN
-     - Chỉ học vừa đủ để build một bản Linux nhẹ (Minimal Linux OS) cho bo mạch nhúng.
+     - :bdg-danger:`RẤT CAO`
+     - DVFS, Thermal Throttling khi model ngốn CPU/NPU trên thiết bị pin.
+   * - **Level 17–19: Buildroot, Yocto, Bootloader**
+     - :bdg-success:`CƠ BẢN`
+     - Vừa đủ để build Minimal Linux OS cho board nhúng.
 
 .. _kanban-board:
 
-6. kanban Board: Project Progress & Goals
-=========================================
+6. Kanban Board: Project Progress & Goals
+-------------------------------------------
 
 .. list-table:: Nhật ký Tiến độ & Mục tiêu
-   :widths: 20 50 30
+   :widths: 25 50 25
    :header-rows: 1
 
    * - Hạng mục / Dự án
@@ -153,16 +209,20 @@ Không học tuần tự từ Level 0 đến Level 20 để tránh chán nản v
      - Trạng thái
    * - **Project 1**
      - ESP32 Dashboard & RF24 HAL (C Clean, Event-driven)
-     - **ĐÃ HOÀN THÀNH**
+     - :bdg-success:`ĐÃ HOÀN THÀNH`
    * - **C++ Upgrade**
      - Modern C++ (Smart Pointers, RAII, Move Semantics, Concurrency)
-     - **ĐANG THỰC HIỆN**
+     - :bdg-warning:`ĐANG THỰC HIỆN`
    * - **LeetCode Core**
-     - 30-50 bài System-related (Bitwise, Sliding Window, Ring Buffer, Graph DAG)
-     - **ĐANG THỰC HIỆN**
+     - 30–50 bài System (Bitwise, Sliding Window, Ring Buffer, Graph DAG)
+     - :bdg-warning:`ĐANG THỰC HIỆN`
    * - **Capstone Project**
-     - Edge AI Audio Translate System (Whisper.cpp + ESP32 + Linux Perf)
-     - **MỤC TIÊU TRỌNG TÂM**
+     - Edge AI Audio Translate (Whisper.cpp + ESP32 + Linux Perf)
+     - :bdg-danger:`MỤC TIÊU TRỌNG TÂM`
    * - **AI Optimization**
-     - Thực hành Quantization (INT8), Benchmark ONNX Runtime vs TFLite
-     - **CHƯA BẮT ĐẦU**
+     - Quantization (INT8), Benchmark ONNX Runtime vs TFLite
+     - :bdg:`CHƯA BẮT ĐẦU`
+
+.. seealso::
+
+   * :doc:`module_to_ai` — Linux Kernel Subsystems Guide for AI Systems

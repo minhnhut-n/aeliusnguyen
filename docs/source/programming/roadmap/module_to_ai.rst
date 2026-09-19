@@ -1,6 +1,6 @@
-=============================================================
-Linux Kernel Subsystems Guide for AI Systems & Infrastructure
-=============================================================
+=================================================================
+1. Linux Kernel Subsystems Guide for AI Systems & Infrastructure
+=================================================================
 
 :Author: Embedded & AI Infrastructure Engineer
 :Target Domain: High-Performance AI Inference, Kernel Tuning, Low-Latency Execution
@@ -8,145 +8,239 @@ Linux Kernel Subsystems Guide for AI Systems & Infrastructure
 :Status: Approved Technical Reference
 :Updated: 2026-04
 
-.. contents:: Table of Contents
+.. contents:: Nội dung chính
    :depth: 2
    :local:
-   :backlinks: entry
 
-Overview
-========
+.. grid:: 1 1 2 2
+   :gutter: 3
 
-Tài liệu tổng hợp các **Kernel Subsystems** và **Modules** cốt lõi giúp tối ưu hóa tài nguyên phần cứng (*CPU, RAM, DMA, I/O*) cho các ứng dụng và dịch vụ AI/Inference hiệu năng cao.
+   .. grid-item-card:: :octicon:`info` Mục tiêu tài liệu
+      :shadow: md
 
-.. note::
-   Tài liệu này hướng tới việc tối ưu hóa cả hai thế hệ Kernel:
-   
-   * **Kernel 4.9 LTS**: Nền tảng legacy (chạy CFS Scheduler, `sched_setscheduler`).
-   * **Kernel 6.12+**: Nền tảng modern (chạy EEVDF Scheduler, `sched_setattr`, `sched_util_min`).
+      Tổng hợp các **Kernel Subsystems & Modules cốt lõi** giúp tối ưu
+      *CPU, RAM, DMA, I/O* cho AI/Inference hiệu năng cao.
 
----
+   .. grid-item-card:: :octicon:`cpu` Hai thế hệ Kernel
+      :shadow: md
 
-Scheduler & Process Management
-==============================
+      .. list-table::
+         :widths: 25 75
+         :header-rows: 0
 
-Đảm bảo CPU được ưu tiên cho tác vụ AI, giảm thiểu tối đa độ trễ (**Latency**) và triệt tiêu hiện tượng giật lag (**Jitter**).
+         * - :bdg:`4.9 LTS`
+           - Legacy · **CFS** · ``sched_setscheduler``
+         * - :bdg-success:`6.12+`
+           - Modern · **EEVDF** · ``sched_setattr``
 
-kernel/sched (CFS, EEVDF, Real-Time Scheduler)
------------------------------------------------
+------
 
-* **Virtual Runtime vs. Virtual Deadline**:
-  Hiểu cơ chế tính toán Virtual Runtime (``vruntime``) trên CFS (Kernel 4.9) và Virtual Deadline / Latency Slices trên EEVDF (Kernel 6.12+).
-* **Scheduling Policies**:
-  Phân biệt rõ mục đích sử dụng của các chính sách lập lịch: ``SCHED_OTHER``, ``SCHED_FIFO``, ``SCHED_RR``, và ``SCHED_DEADLINE``.
-* **System Calls Key APIs**:
-  Làm chủ các System Call điều phối tác vụ: ``sched_setscheduler()``, ``sched_setattr()``, và ``sched_setaffinity()``.
+1. Scheduler & Process Management
+---------------------------------
 
-cpufreq / cpuidle (Power & Governor Management)
------------------------------------------------
+.. grid:: 1
+   :gutter: 2
 
-* **Governor Selection**:
-  Nắm vững cơ chế của các Governors: ``performance``, ``powersave``, và ``schedutil``.
-* **Instant Frequency Ramp-Up**:
-  Tương tác với sysfs (``/sys/devices/system/cpu/cpu*/cpufreq/``) để nâng xung nhịp CPU lên mức tối đa ngay khi kích hoạt AI Task, triệt tiêu độ trễ khởi động.
+   .. grid-item-card:: 💡 Vì sao quan trọng?
+      :shadow: sm
+      :class-card: sd-bg-light
 
-cgroups v2 (cpu, cpuset, memory)
+      Đảm bảo CPU luôn ưu tiên cho tác vụ AI — giảm **Latency**,
+      triệt tiêu **Jitter**, giữ inference ổn định thời gian thực.
+
+kernel/sched — CFS, EEVDF, Real-Time
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. grid:: 1 1 3 3
+   :gutter: 2
+
+   .. grid-item-card:: :octicon:`clock` Virtual Runtime / Deadline
+      :shadow: sm
+
+      CFS (4.9) cân bằng theo ``vruntime`` — EEVDF (6.12+)
+      lập lịch theo **Virtual Deadline / Latency Slice**.
+
+   .. grid-item-card:: :octicon:`zap` Scheduling Policies
+      :shadow: sm
+
+      ``SCHED_OTHER`` (task thường) ·
+      ``SCHED_FIFO`` / ``SCHED_RR`` (real-time cho inference) ·
+      ``SCHED_DEADLINE`` (deadline cứng).
+
+   .. grid-item-card:: :octicon:`terminal` Key APIs
+      :shadow: sm
+
+      ``sched_setscheduler()`` (legacy) ·
+      ``sched_setattr()`` (modern) ·
+      ``sched_setaffinity()`` (pin core).
+
+cpufreq / cpuidle — Power & Governor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* **Governor:** ``performance`` | ``powersave`` | ``schedutil``
+* **Ramp-Up tức thì:** ghi vào ``/sys/.../cpufreq/`` để dựng xung tối đa
+  ngay khi AI task chạy — triệt tiêu trễ khởi động.
+
+  .. code-block:: bash
+
+     echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+
+cgroups v2 — cpu, cpuset, memory
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* **Limits:** ``cpu.max`` · ``cpu.weight`` · ``memory.max`` · ``memory.high``
+* **Core Isolation:** ``isolcpus`` + ``nohz_full`` để dành core riêng
+  cho inference, tránh nhiễu từ OS/IRQs.
+
+  .. code-block:: bash
+
+     isolcpus=2,3 nohz_full=2,3 rcu_nocbs=2,3
+
+------
+
+2. Memory Management & Zero-Copy
 --------------------------------
 
-* **Resource Limits**:
-  Quản lý giới hạn tài nguyên cứng bằng các thông số: ``cpu.max``, ``cpu.weight``, ``memory.max``, và ``memory.high``.
-* **Core Isolation**:
-  Cô lập CPU (sử dụng boot args ``isolcpus``, ``nohz_full``) để dành riêng Core vật lý cho AI Inference mà không bị ngắt bởi OS (IRQs).
+.. grid:: 1
+   :gutter: 2
 
----
+   .. grid-item-card:: 💡 Vì sao quan trọng?
+      :shadow: sm
+      :class-card: sd-bg-light
 
-Memory Management & Zero-Copy Subsystem
-=======================================
+      Tối ưu băng thông nhớ, triệt tiêu ``memcpy`` giữa
+      Kernel Space ↔ User Space — sống còn với model lớn.
 
-Tối ưu hóa băng thông bộ nhớ, triệt tiêu chi phí copy dữ liệu (Memory Overhead) giữa Kernel Space và User Space.
+mm — Virtual Memory, Page Allocator, Swap
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-mm (Virtual Memory, Page Allocator, Paging & Swap)
---------------------------------------------------
+* **Syscalls:** ``mmap()`` · ``madvise()`` · ``mlock()`` / ``mlockall()``
+* **Chống page-fault:** khóa weights/tensors trong RAM, chống swap gây sụt FPS:
 
-* **System Calls Core**:
-  Nắm vững ``mmap()``, ``madvise()``, và đặc biệt là ``mlock()`` / ``mlockall()``.
-* **Preventing Page Faults**:
-  Sử dụng ``mlockall(MCL_CURRENT | MCL_FUTURE)`` để khóa toàn bộ Weights và Tensors trong RAM vật lý, chống Paging/Swap ra ổ đĩa gây sụt giảm FPS.
+  .. code-block:: c
 
-dma-buf (DMA Buffer Sharing Framework)
---------------------------------------
+     mlockall(MCL_CURRENT | MCL_FUTURE);
+
+dma-buf — DMA Buffer Sharing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. important::
-   **Module cốt lõi**: Cơ chế chia sẻ con trỏ bộ nhớ (Buffer FD) trực tiếp giữa Camera/Sensor Driver, NPU/GPU Driver và AI Runtime mà **không qua memcpy (Zero-Copy)**.
+   **Module cốt lõi cho Zero-Copy** — chia sẻ Buffer FD trực tiếp giữa
+   Camera/Sensor ↔ NPU/GPU ↔ AI Runtime, **không qua** ``memcpy``.
 
-CMA (Contiguous Memory Allocator) / DMABUF-HEAPS
-------------------------------------------------
+CMA / DMABUF-HEAPS
+~~~~~~~~~~~~~~~~~~
 
-* **Device Tree Reservation**:
-  Định nghĩa và cấp phát vùng nhớ vật lý liên tục dung lượng lớn trong Device Tree (file ``.dts``) dành riêng cho các Tensor allocations.
+Đặt vùng nhớ vật lý liên tục trong ``.dts`` cho tensor allocations:
 
-HUGETLBFS / Transparent Huge Pages (THP)
-----------------------------------------
+.. code-block:: dts
 
-* **TLB Miss Reduction**:
-  Tận dụng Huge Pages (2MB / 1GB) để giảm tỷ lệ trễ Cache Miss (TLB Miss) khi load các file Model Weights dung lượng lớn (LLM, Complex DNNs).
+   ai_tensor_region: ai@80000000 {
+       reg = <0x0 0x80000000 0x0 0x20000000>; /* 512MB */
+   };
 
----
+HUGETLBFS / THP
+~~~~~~~~~~~~~~~
 
-Hardware Interface & Inter-Process Communication
-================================================
+Dùng Huge Pages (2MB / 1GB) giảm TLB miss khi load weights lớn (LLM/DNN):
 
-Nạp dữ liệu từ thiết bị ngoại vi vào Pipeline tính toán AI với thời gian thực.
+.. code-block:: bash
 
-v4l2 (Video for Linux 2) & Media Subsystem
-------------------------------------------
+   echo always | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
 
-* Khai thác luồng dữ liệu từ Camera trực tiếp vào khung RAM chung bằng cơ chế ``V4L2_MEMORY_DMABUF``.
+------
 
-char/mem, UIO (Userspace I/O) & VFIO
-------------------------------------
+3. Hardware Interface & IPC
+---------------------------
 
-* Cho phép điều khiển thanh ghi phần cứng (GPU/NPU/FPGA) trực tiếp từ User-space để đạt hiệu năng giao tiếp tối đa.
+.. grid:: 1
+   :gutter: 2
 
-net/core & Socket (eBPF / XDP)
-------------------------------
+   .. grid-item-card:: 💡 Vì sao quan trọng?
+      :shadow: sm
+      :class-card: sd-bg-light
 
-* Xử lý luồng dữ liệu mạng (Network Packet Ingestion) ở cấp độ Kernel Packet Buffer cho các hệ thống AI Inference Server.
+      Đưa dữ liệu từ ngoại vi vào pipeline AI với độ trễ thấp nhất.
 
----
+.. list-table:: Subsystem → Vai trò trong AI Pipeline
+   :widths: 30 70
+   :header-rows: 1
 
-Profiling, Tracing & Performance Metrics
-========================================
+   * - Subsystem
+     - Dùng cho AI như thế nào?
+   * - **v4l2 & Media**
+     - Frame camera vào RAM chung qua ``V4L2_MEMORY_DMABUF``
+   * - **char / UIO / VFIO**
+     - Ghi thanh ghi GPU/NPU/FPGA từ user-space, hiệu năng tối đa
+   * - **net/core (eBPF/XDP)**
+     - Ingest packet ở kernel buffer cho Inference Server
 
-Đo đạc chính xác độ trễ, điểm nghẽn (Bottlenecks) và hành vi hệ thống theo thời gian thực.
+------
 
-ftrace & tracepoints
---------------------
+4. Profiling, Tracing & Metrics
+--------------------------------
 
-* Theo dõi luồng chuyển giao tiến trình (``sched_switch``), đo độ trễ ngắt (Interrupt Latency) và thời gian thực thi của Kernel Functions.
+.. grid:: 1
+   :gutter: 2
 
-perf_events Subsystem
----------------------
+   .. grid-item-card:: 💡 Vì sao quan trọng?
+      :shadow: sm
+      :class-card: sd-bg-light
 
-* Ghi nhận và phân tích các sự kiện phần cứng (Hardware Counters): CPU Cache Misses, Branch Mispredictions, Bus Cycles.
+      Đo chính xác latency, tìm bottleneck, quan sát hệ thống thời gian thực.
 
-eBPF (Extended Berkeley Packet Filter)
---------------------------------------
+.. grid:: 1 1 3 3
+   :gutter: 2
 
-* Gán các Probe (``kprobe``, ``uprobe``) giám sát hành vi, Latency và I/O của AI Service theo thời gian thực mà không làm chậm hệ thống.
+   .. grid-item-card:: :octicon:`graph` ftrace
+      :shadow: sm
 
----
+      Trace ``sched_switch``, đo interrupt latency:
 
-Checklist Thực Hành Từng Bước
-=============================
+      .. code-block:: bash
+
+         echo 1 | sudo tee /sys/kernel/tracing/events/sched/sched_switch/enable
+
+   .. grid-item-card:: :octicon:`pulse` perf_events
+      :shadow: sm
+
+      Hardware counters: cache-miss, branch-miss, bus-cycles:
+
+      .. code-block:: bash
+
+         perf stat -e cache-misses,cycles ./ai_infer
+
+   .. grid-item-card:: :octicon:`eye` eBPF
+      :shadow: sm
+
+      Gắn ``kprobe`` / ``uprobe`` giám sát latency, I/O
+      của AI service mà không làm chậm hệ thống.
+
+------
+
+5. Checklist Thực Hành
+----------------------
 
 .. tip::
-   Thực hiện tuần tự theo 3 giai đoạn để đóng gói thành công **Boost Service Wrapper**:
+   Làm tuần tự 3 giai đoạn để đóng gói **Boost Service Wrapper**.
 
-1. **Giai đoạn 1 — Scheduler Tuning**:
-   Viết code C/C++ thử nghiệm ``sched_setattr()``, ``sched_setaffinity()`` và ``mlockall()`` trên ứng dụng mẫu.
+.. grid:: 1 1 1 3
+   :gutter: 3
 
-2. **Giai đoạn 2 — Zero-Copy Data Pipeline**:
-   Lập trình truyền mảng dữ liệu qua ``dma-buf`` giữa 2 tiến trình độc lập mà không dùng hàm ``memcpy``.
+   .. grid-item-card:: :octicon:`rocket` Giai đoạn 1 — Scheduler Tuning
+      :shadow: md
 
-3. **Giai đoạn 3 — Profiling & Benchmarking**:
-   Sử dụng ``perf`` và ``ftrace`` trích xuất biểu đồ Latency của AI Task dưới các chính sách lập lịch khác nhau (CFS vs EEVDF).
+      Thử ``sched_setattr()`` · ``sched_setaffinity()`` ·
+      ``mlockall()`` trên app mẫu, so sánh jitter trước/sau.
+
+   .. grid-item-card:: :octicon:`package` Giai đoạn 2 — Zero-Copy
+      :shadow: md
+
+      Truyền buffer qua ``dma-buf`` giữa 2 process
+      **không** ``memcpy``. Đo bandwidth tiết kiệm được.
+
+   .. grid-item-card:: :octicon:`checklist` Giai đoạn 3 — Benchmark
+      :shadow: md
+
+      Dùng ``perf`` + ``ftrace`` vẽ latency
+      **CFS vs. EEVDF**, chốt governor + affinity tối ưu.
