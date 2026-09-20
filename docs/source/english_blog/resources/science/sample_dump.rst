@@ -1,5 +1,5 @@
 Sample Dump - Science
-===================
+=====================
 
 Template file for dumping new vocabulary, collocations and reading notes about science.
 
