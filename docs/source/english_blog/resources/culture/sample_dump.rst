@@ -1,5 +1,5 @@
 Sample Dump - Culture
-===================
+=====================
 
 Template file for dumping new vocabulary, collocations and reading notes about culture.
 

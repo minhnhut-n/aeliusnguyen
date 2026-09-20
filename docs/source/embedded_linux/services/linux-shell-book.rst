@@ -1,5 +1,5 @@
-Bash Workload Lab: 3 Practical Examples
-========================================
+Bash workload cookbook and examples
+===================================
 
 .. rubric:: What you will learn
 

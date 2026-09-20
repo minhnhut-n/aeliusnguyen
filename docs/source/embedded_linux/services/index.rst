@@ -8,6 +8,7 @@ Dịch vụ hệ thống: systemd, network, docker, ...
    :caption: Services
    :titlesonly:
 
-   linux-shell-toolkit
+   linux-shell-book
+   logging-system
 
 .. include:: ../../_includes/contact_info.rst
