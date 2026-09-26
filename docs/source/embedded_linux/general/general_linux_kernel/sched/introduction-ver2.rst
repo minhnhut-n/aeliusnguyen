@@ -1,5 +1,5 @@
-Introduction — Scheduler và bài toán điều phối
-==============================================
+Introduction — Scheduler và bài toán điều phối - Vers2
+======================================================
 
 .. rst-class:: lead
 
@@ -33,18 +33,18 @@ Introduction — Scheduler và bài toán điều phối
    :color: primary
    :open:
 
-   - **Tư duy gốc:** vì sao OS không thể sống thiếu scheduler (từ ``temp.md``).
-   - **Bức tranh toàn cảnh:** các scheduler class đang có trong mainline.
-   - **Bộ máy hỗ trợ:** EAS / Capacity-Aware Scheduling hoạt động kề bên scheduler ra sao.
-   - **Khung phân tích module kernel** chuẩn để áp dụng cho mọi subsystem.
+   * **Tư duy gốc:** vì sao OS không thể sống thiếu scheduler (từ ``temp.md``).
+   * **Bức tranh toàn cảnh:** các scheduler class đang có trong mainline.
+   * **Bộ máy hỗ trợ:** EAS / Capacity-Aware Scheduling hoạt động kề bên scheduler ra sao.
+   * **Khung phân tích module kernel** chuẩn để áp dụng cho mọi subsystem.
 
 ---
 
 .. rubric:: 1. Nếu hệ thống không có scheduler
 
-Nếu một hệ thống không có scheduler, về cơ bản hệ thống sẽ gặp vấn đề rất lớn.
+Nếu một hệ thống không có scheduler, về cơ bản hệ thống sẽ gặp vấn đề rất lớn về hiệu năng và độ ổn định.
 
-.. grid:: 1
+.. grid:: 1 1 2 2
    :gutter: 3
 
    .. grid-item-card:: Làm việc tuần tự — hiện tượng chờ
@@ -66,10 +66,6 @@ Nếu một hệ thống không có scheduler, về cơ bản hệ thống sẽ 
 
       CPU có thể không được sử dụng hiệu quả trong thời gian Task A đang chờ.
 
-
-.. grid:: 1
-   :gutter: 3
-
    .. grid-item-card:: Interrupt không phải scheduler
       :class-card: sd-shadow-sm
 
@@ -87,7 +83,7 @@ Nếu một hệ thống không có scheduler, về cơ bản hệ thống sẽ 
             Scheduler ──▶ Task
 
       Khi event dồn dập (I/O A, I/O B, Timer, Network cùng ngắt):
-      
+
       * Task nào chạy trước? Task nào chờ?
       * Task nào bị preempt? CPU nào chạy task?
 
@@ -95,8 +91,8 @@ Nếu một hệ thống không có scheduler, về cơ bản hệ thống sẽ 
    **Interrupt** trả lời *“có sự kiện”*, **Scheduler** trả lời *“ai nên chạy?”*.
    Hai bài toán khác nhau nhưng liên quan chặt chẽ.
 
-Sau khi một task bị interrupt hoặc bị preempt, bài toán còn lại là:
-**khi nào nó được chạy lại và thứ tự thực thi giữa các task duy trì thế nào?**
+Sau khi một task bị interrupt hoặc bị preempt, bài toán còn lại là: **khi nào nó được chạy lại và thứ tự thực thi giữa các task duy trì thế nào?**
+Nếu chia sẻ tài nguyên và thứ tự thực thi không được kiểm soát tốt, hệ thống sẽ đối mặt với tình trạng CPU starvation (đói tài nguyên), nghẽn I/O, priority inversion và mất khả năng phản hồi theo thời gian thực.
 
 ---
 
@@ -104,7 +100,7 @@ Sau khi một task bị interrupt hoặc bị preempt, bài toán còn lại là
 
 Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể cho tất cả thực sự chạy cùng một thời điểm. Kernel cần một execution model.
 
-.. grid:: 1
+.. grid:: 1 1 2 2
    :gutter: 3
 
    .. grid-item-card:: Single CPU — xếp thứ tự chạy
@@ -118,9 +114,6 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
             Task C ──┼──▶ Scheduler ──▶ CPU ──▶ A → C → B → A → D → ...
             Task D ──┤
             Task E ──┘
-
-.. grid:: 1
-   :gutter: 3
 
    .. grid-item-card:: Multi-core — chạy song song thật
       :class-card: sd-shadow-sm
@@ -142,13 +135,15 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
 
 .. rubric:: 3. Multithreading, multiprocessing và Synchronization
 
+Mỗi execution context (process / thread) là một dòng thực thi độc lập. Multiprocessing / multithreading tạo ra nhiều context như vậy.
+
 .. tab-set::
 
    .. tab-item:: Execution context
 
-      Các cơ chế process, thread, multiprocessing và multithreading cho phép tạo nhiều execution context:
+      Application tạo nhiều thread, multicore chạy song song:
 
-      .. grid:: 1
+      .. grid:: 1 1 2 2
          :gutter: 2
 
          .. grid-item-card:: Application tạo thread
@@ -162,9 +157,6 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
                     ├──▶ Thread B
                     ├──▶ Thread C
                     └──▶ Thread D
-
-      .. grid:: 1
-         :gutter: 2
 
          .. grid-item-card:: Multicore chạy song song
             :class-card: sd-shadow-sm
@@ -184,7 +176,7 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
 
       Các cơ chế thường gặp:
 
-      .. grid:: 1 1 3 3
+      .. grid:: 1 2 2 4
          :gutter: 2
 
          .. grid-item-card:: mutex
@@ -205,14 +197,11 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
 
             busy-wait
 
-      .. grid:: 1 1 3 3
-         :gutter: 2
-
          .. grid-item-card:: atomic
             :text-align: center
             :class-card: sd-shadow-sm
 
-            op nguyên tử       
+            op nguyên tử
 
          .. grid-item-card:: rwlock
             :text-align: center
@@ -225,9 +214,6 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
             :class-card: sd-shadow-sm
 
             chờ / báo
-
-      .. grid:: 1 1 3 3
-         :gutter: 2
 
          .. grid-item-card:: wait queue
             :text-align: center
@@ -244,7 +230,7 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
       .. code-block:: text
          :caption: Luồng lock → dùng → unlock → wake → schedule
 
-         Thread A:  lock ──▶ use Shared Resource ──▶ unlock ──▶ wake Thread B
+         Thread A: lock ──▶ use Shared Resource ──▶ unlock ──▶ wake Thread B
                                                                            │
                                                                            ▼
                                   Scheduler ◀── Thread B chạy ◀── lock ── ...
@@ -258,7 +244,9 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
 
 .. rubric:: 4. Race condition, deadlock — Scheduler không sửa thay bạn
 
-.. grid:: 1
+Hai thread cùng ``counter++`` có thể xen kẽ đọc-ghi và làm mất update. Scheduler **không tự làm phép toán này thread-safe** — cần lock bảo vệ Shared Resource. Dùng sai mutex / semaphore / spinlock có thể dẫn đến deadlock, starvation hoặc priority inversion.
+
+.. grid:: 1 1 2 2
    :gutter: 3
 
    .. grid-item-card:: Race condition — counter++
@@ -275,11 +263,6 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
          Thread A: read ──▶ counter++ ──▶ write
          Thread B:    read ──▶ counter++ ──▶ write (đè mất!)
 
-      Scheduler **không tự làm phép toán này thread-safe**.
-
-.. grid:: 1
-   :gutter: 3
-
    .. grid-item-card:: Deadlock — khóa chéo
       :class-card: sd-shadow-sm
 
@@ -289,8 +272,6 @@ Giả sử có 5 task (A, B, C, D, E) nhưng chỉ có 1 CPU — không thể ch
          Thread A: lock(A) ──▶ wait for (B) ──┐
                                               ├──▶ DEADLOCK
          Thread B: lock(B) ──▶ wait for (A) ──┘
-
-      Dùng sai mutex / semaphore / spinlock cũng có thể dẫn đến deadlock, starvation hoặc priority inversion.
 
 .. important::
    Scheduler, synchronization và resource management là các vấn đề **liên quan nhưng không đồng nhất**.
@@ -305,7 +286,7 @@ Có thể mô tả scheduler bằng một câu hỏi duy nhất:
 
    Task nào được chạy, khi nào được chạy, chạy trên CPU nào và trong bao lâu?
 
-.. grid:: 1
+.. grid:: 1 1 2 2
    :gutter: 3
 
    .. grid-item-card:: Mô hình điều phối
@@ -320,9 +301,6 @@ Có thể mô tả scheduler bằng một câu hỏi duy nhất:
            Scheduler
                 ├──▶ CPU 0 ──▶ Task A
                 └──▶ CPU 1 ──▶ Task B
-
-.. grid:: 1
-   :gutter: 3
 
    .. grid-item-card:: Scheduler phải phối hợp
       :class-card: sd-shadow-sm
@@ -354,8 +332,7 @@ Có thể mô tả scheduler bằng một câu hỏi duy nhất:
            - WHAT? — Task cần làm gì?
            - Logic nghiệp vụ bên trong task
 
-      Scheduler không thể biến ``counter++`` thành operation atomic.
-      Nhưng scheduler là một phần quan trọng của execution environment mà các synchronization mechanism hoạt động bên trong.
+      Scheduler không thể biến ``counter++`` thành operation atomic. Nhược điểm này do tầng lập trình giải quyết, nhưng scheduler tạo lập môi trường cho các cơ chế đồng bộ vận hành.
 
    .. tab-item:: Luồng phối hợp Lock → Schedule
 
@@ -377,17 +354,19 @@ Có thể mô tả scheduler bằng một câu hỏi duy nhất:
 
 .. rubric:: 6. Application mô tả concurrency — Kernel biến thành execution
 
-.. grid:: 1
+Application mô tả concurrency (threads / processes); kernel biến concurrency đó thành execution thực sự trên hardware. Application có Thread A / B / C nhưng **không trực tiếp** quyết định các tham số hạ tầng.
+
+.. grid:: 1 1 2 2
    :gutter: 3
 
    .. grid-item-card:: Application không quyết định hết
       :class-card: sd-shadow-sm
 
-      Application có Thread A / B / C, nhưng **không trực tiếp** quyết:
+      Application không can thiệp trực tiếp:
 
-      * CPU core nào?
-      * Thời điểm nào?
-      * Preempt khi nào?
+      * CPU core nào đảm nhiệm?
+      * Thời điểm thực thi cụ thể?
+      * Khi nào bị preempt?
       * Task nào được wake / block / chạy tiếp?
 
    .. grid-item-card:: Kernel đảm nhiệm
@@ -411,9 +390,9 @@ Có thể mô tả scheduler bằng một câu hỏi duy nhất:
 .. dropdown:: Scheduler cải thiện performance theo cách nào?
    :color: primary
 
-   Scheduler tốt ảnh hưởng throughput, latency, responsiveness, CPU / multicore utilization, power, fairness.
+   Scheduler tốt ảnh hưởng trực tiếp tới throughput, latency, responsiveness, CPU / multicore utilization, power, fairness.
 
-   .. grid:: 1
+   .. grid:: 1 1 2 2
       :gutter: 2
 
       .. grid-item-card:: Poor scheduling
@@ -423,9 +402,6 @@ Có thể mô tả scheduler bằng một câu hỏi duy nhất:
 
             Task A,B,C,D ──▶ 1 CPU ──▶ waiting, contention, high latency
 
-   .. grid:: 1
-      :gutter: 2
-
       .. grid-item-card:: Good scheduling
          :class-card: sd-shadow-sm
 
@@ -434,8 +410,7 @@ Có thể mô tả scheduler bằng một câu hỏi duy nhất:
                 Scheduler ──▶ CPU 0: A→C / CPU 1: B→E / CPU 2: D→F
 
    .. warning::
-      Đừng hiểu scheduler tự làm performance tăng “hàng trăm lần”.
-      Mức cải thiện phụ thuộc workload, hardware, I/O, sync, MM và policy.
+      Đừng hiểu scheduler tự làm performance tăng “hàng trăm lần”. Mức cải thiện phụ thuộc vào đặc thụ workload, hardware, I/O, sync, MM và policy.
 
 ---
 
@@ -443,7 +418,7 @@ Có thể mô tả scheduler bằng một câu hỏi duy nhất:
 
 Scheduler không phải toàn bộ OS:
 
-.. grid:: 1
+.. grid:: 1 1 2 2
    :gutter: 3
 
    .. grid-item-card:: OS gồm nhiều subsystem
@@ -459,9 +434,6 @@ Scheduler không phải toàn bộ OS:
                │        │        │
                ▼        ▼        ▼
               CPU     Memory   Storage
-
-.. grid:: 1
-   :gutter: 3
 
    .. grid-item-card:: Scheduler gắn với MM / FS / Net / Driver
       :class-card: sd-shadow-sm
@@ -516,11 +488,13 @@ Các subsystem cần tách ra để dễ phát triển, debug, bảo trì, giả
             :class-card: sd-shadow-sm
 
             dễ phát triển, debug, bảo trì
+
          .. grid-item-card:: Hợp để
             :text-align: center
             :class-card: sd-shadow-sm
 
             task + memory + I/O cùng chạy
+
          .. grid-item-card:: Kết quả
             :text-align: center
             :class-card: sd-shadow-sm
@@ -579,6 +553,8 @@ Một cách quan trọng để hiểu scheduler là phân biệt Mechanism và P
 
 .. rubric:: 10. Scheduler như bài toán resource allocation
 
+Scheduler cân ba mục tiêu cùng tranh một CPU: Latency (task chờ bao lâu?), Throughput (xong bao nhiêu việc?), Fairness (chia có công bằng?).
+
 .. grid:: 1 2 2 3
    :gutter: 3
 
@@ -587,11 +563,13 @@ Một cách quan trọng để hiểu scheduler là phân biệt Mechanism và P
       :class-card: sd-shadow-sm
 
       task chờ bao lâu?
+
    .. grid-item-card:: Throughput
       :text-align: center
       :class-card: sd-shadow-sm
 
       xong bao nhiêu việc?
+
    .. grid-item-card:: Fairness
       :text-align: center
       :class-card: sd-shadow-sm
@@ -670,26 +648,31 @@ Một cách quan trọng để hiểu scheduler là phân biệt Mechanism và P
             :class-card: sd-shadow-sm
 
             chia công bằng
+
          .. grid-item-card:: Throughput
             :text-align: center
             :class-card: sd-shadow-sm
 
             xong nhiều việc
+
          .. grid-item-card:: Latency
             :text-align: center
             :class-card: sd-shadow-sm
 
             chờ ít
+
          .. grid-item-card:: Responsiveness
             :text-align: center
             :class-card: sd-shadow-sm
 
             phản hồi nhanh
+
          .. grid-item-card:: Power
             :text-align: center
             :class-card: sd-shadow-sm
 
             tiết kiệm pin
+
          .. grid-item-card:: Scalability
             :text-align: center
             :class-card: sd-shadow-sm
@@ -712,55 +695,61 @@ Do đó scheduler của RTOS và GPOS có những mục tiêu và trade-off khá
       :class-card: sd-shadow-sm
 
       quản lý task sẵn sàng
+
    .. grid-item-card:: runqueue
       :text-align: center
       :class-card: sd-shadow-sm
 
       hàng đợi ``rq``
+
    .. grid-item-card:: scheduling policy
       :text-align: center
       :class-card: sd-shadow-sm
 
       CFS / RT / Deadline
+
    .. grid-item-card:: priority
       :text-align: center
       :class-card: sd-shadow-sm
 
       độ ưu tiên
+
    .. grid-item-card:: preemption
       :text-align: center
       :class-card: sd-shadow-sm
 
       giành / chiếm CPU
+
    .. grid-item-card:: context switch
       :text-align: center
       :class-card: sd-shadow-sm
 
       đổi ngữ cảnh
+
    .. grid-item-card:: wakeup / blocking
       :text-align: center
       :class-card: sd-shadow-sm
 
       đánh thức / chặn
+
    .. grid-item-card:: CPU affinity
       :text-align: center
       :class-card: sd-shadow-sm
 
       gán CPU
+
    .. grid-item-card:: load balancing
       :text-align: center
       :class-card: sd-shadow-sm
 
       cân tải
 
-.. grid:: 1 1 2 2
-   :gutter: 2
-
    .. grid-item-card:: timer
       :text-align: center
       :class-card: sd-shadow-sm
 
       tick định kỳ
+
    .. grid-item-card:: synchronization
       :text-align: center
       :class-card: sd-shadow-sm
@@ -822,17 +811,17 @@ Do đó scheduler của RTOS và GPOS có những mục tiêu và trade-off khá
 .. rubric:: 14. Bản đồ các Scheduler trong Linux hiện nay
 
 * **CFS — Completely Fair Scheduler**
-  
+
   * *Ý tưởng cốt lõi:* mỗi task có ``vruntime``; ai “thiệt thòi” nhất được chạy trước. Công bằng theo weight.
   * *Khi nào quan tâm:* hệ general-purpose, server, desktop. Hiểu nền này trước khi học EEVDF.
 
 * **EEVDF — Earliest Eligible Virtual Deadline First**
-  
+
   * *Ý tưởng cốt lõi:* thay ``vruntime`` bằng *virtual deadline*; task nào deadline sớm + đủ điều kiện chạy trước. Thay thế dần CFS từ kernel 6.6+.
   * *Khi nào quan tâm:* cần latency tốt hơn, công bằng hơn khi task sleep/wake liên tục, cgroup nặng.
 
 * **Realtime —** ``RT`` **+** ``Deadline``
-  
+
   * *Ý tưởng cốt lõi:* ``SCHED_FIFO / SCHED_RR`` chạy theo priority; ``SCHED_DEADLINE`` chạy theo EDF + CBS (runtime / period / deadline).
   * *Khi nào quan tâm:* audio, robot, điều khiển công nghiệp, preempt-rt — nơi trễ 1ms cũng là lỗi.
 
