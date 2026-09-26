@@ -15,5 +15,3 @@ shell, quản lý filesystem, các command line tools cơ bản và hiểu về 
    filesystem
    process
    command-line
-
-.. include:: ../../../../_includes/contact_info.rst

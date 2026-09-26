@@ -29,5 +29,3 @@ từ Linux user, system programming, kernel, device tree cho đến BSP engineer
    level-18-yocto/index
    level-19-bootloader/index
    level-20-bsp-engineer/index
-
-.. include:: ../../../_includes/contact_info.rst

@@ -6,14 +6,21 @@ mã nguồn Linux, kiến trúc kernel, ...
 
 .. toctree::
    :maxdepth: 1
-   :caption: Learning Path
+   :caption: General Paper
    :titlesonly:
 
-   learning-path/index
+   general_paper/index
 
 .. toctree::
    :maxdepth: 1
-   :caption: Docs
+   :caption: General Linux Kernel
    :titlesonly:
 
-   docs/index
+   general_linux_kernel/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Learning Path
+   :titlesonly:
+
+   learning_path/index

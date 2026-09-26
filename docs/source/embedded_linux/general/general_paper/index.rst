@@ -1,11 +1,11 @@
-Docs
-====
+General Paper
+=============
 
 Tài liệu phân tích chi tiết về các chủ đề trong Embedded Linux.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Docs
+   :caption: General Paper
    :titlesonly:
 
    kernel-mm
