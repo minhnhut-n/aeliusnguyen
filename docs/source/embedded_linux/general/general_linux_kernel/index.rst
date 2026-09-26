@@ -8,3 +8,4 @@ Linux Kernel and Surrounding it
    :titlesonly:
    
    sched/index
+   the-rule-of-research-info

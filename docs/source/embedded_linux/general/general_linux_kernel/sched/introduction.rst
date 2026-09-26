@@ -43,22 +43,26 @@ Introduction — Linux Kernel Scheduler
 
 .. rubric:: 1. Bản đồ các Scheduler hiện nay
 
-.. list-table::
-   :header-rows: 1
-   :widths: 20 45 35
+* **CFS — Completely Fair Scheduler**
 
-   * - Scheduler
-     - Ý tưởng cốt lõi
-     - Khi nào quan tâm?
-   * - **CFS** — Completely Fair Scheduler
-     - Mỗi task có ``vruntime``; ai “thiệt thòi” nhất được chạy trước. Công bằng theo weight.
-     - Hệ general-purpose, server, desktop, hiểu nền trước khi học EEVDF.
-   * - **EEVDF** — Earliest Eligible Virtual Deadline First
-     - Thay ``vruntime`` bằng *virtual deadline*; task nào deadline sớm + đủ điều kiện chạy trước. Thay thế dần CFS từ kernel 6.6+.
-     - Latency tốt hơn, công bằng hơn khi task sleep/wake liên tục, cgroup nặng.
-   * - **Realtime** — ``RT`` + ``Deadline``
-     - ``SCHED_FIFO / SCHED_RR`` theo priority; ``SCHED_DEADLINE`` theo EDF + CBS (runtime/period/deadline).
-     - Audio, robot, điều khiển công nghiệp, preempt-rt — nơi trễ 1ms cũng là lỗi.
+  * *Ý tưởng cốt lõi:* mỗi task có ``vruntime``; ai “thiệt thòi” nhất được chạy trước.
+    Công bằng theo weight.
+  * *Khi nào quan tâm:* hệ general-purpose, server, desktop.
+    Hiểu nền này trước khi học EEVDF.
+
+* **EEVDF — Earliest Eligible Virtual Deadline First**
+
+  * *Ý tưởng cốt lõi:* thay ``vruntime`` bằng *virtual deadline*;
+    task nào deadline sớm + đủ điều kiện chạy trước. Thay thế dần CFS từ kernel 6.6+.
+  * *Khi nào quan tâm:* cần latency tốt hơn, công bằng hơn khi task sleep/wake liên tục,
+    cgroup nặng.
+
+* **Realtime —** ``RT`` **+** ``Deadline``
+
+  * *Ý tưởng cốt lõi:* ``SCHED_FIFO / SCHED_RR`` chạy theo priority;
+    ``SCHED_DEADLINE`` chạy theo EDF + CBS (runtime / period / deadline).
+  * *Khi nào quan tâm:* audio, robot, điều khiển công nghiệp, preempt-rt —
+    nơi trễ 1ms cũng là lỗi.
 
 .. note::
    Muốn hiểu nhanh sự khác nhau **CFS vs EEVDF vs RT**, đọc theo thứ tự:
@@ -99,61 +103,7 @@ Introduction — Linux Kernel Scheduler
 
 ---
 
-.. rubric:: 3. Bốn lăng kính để đọc code kernel/sched/
-
-Đừng đọc dàn trải 30k dòng code. Hãy xoay quanh 4 câu hỏi sau:
-
-.. tab-set::
-
-   .. tab-item:: Computations — Tính cái gì?
-
-      * ``vruntime``, deadline, slice (timeslice) tính như thế nào?
-      * Load: ``load_avg``, ``runnable_avg``, PELT decay theo thời gian ra sao?
-      * Energy: ``compute_energy()`` cộng cost của perf-domain thế nào?
-      * Capacity: ``capacity_orig vs capacity_curr``, thermal pressure trừ ở đâu?
-
-   .. tab-item:: Algorithms — Thuật toán nào?
-
-      * **CFS:** cây đỏ-đen + min-vruntime picking.
-      * **EEVDF:** eligible + earliest deadline, lag-based compensation.
-      * **RT/Deadline:** priority queue + EDF + Constant Bandwidth Server.
-      * **Placement:** wakee placement, ``find_idlest_cpu``, ``sched_balance``.
-      * **PELT, WALT:** trung bình trượt có trọng số theo thời gian.
-
-   .. tab-item:: Data structures — Dữ liệu ở đâu?
-
-      .. list-table::
-         :header-rows: 1
-
-         * - Struct
-           - Vai trò ghi nhớ nhanh
-         * - ``struct task_struct``
-           - Mọi thứ về task: policy, prio, ``se``, ``rt``, ``dl``.
-         * - ``struct sched_entity``
-           - Thực thể fair: ``vruntime``, ``deadline``, ``lag``.
-         * - ``struct cfs_rq / rt_rq / dl_rq``
-           - Hàng đợi trên mỗi CPU cho từng class.
-         * - ``struct rq``
-           - Hàng đợi gốc mỗi CPU: clock, curr, nr_running, lock.
-         * - ``struct sched_domain / sched_group``
-           - Topology cho load-balance: SMT, core, cluster, die.
-
-   .. tab-item:: Vận hành — Chúng nói chuyện ra sao?
-
-      * **Tick:** ``scheduler_tick()`` → update curr, check preempt.
-      * **Wake-up:** ``try_to_wake_up()`` → chọn CPU → enqueue → preempt victim?
-      * **Pick-next:** ``__schedule()`` → ``pick_next_task()`` đi qua ``dl → rt → fair → idle``.
-      * **Balance:** periodic + idle balance, active balance khi CPU lệch tải.
-      * **Hook bên ngoài:** cpufreq (``schedutil``), cpuidle, cgroup, perf, tracepoints.
-
-.. tip::
-   Mẹo đọc code cực nhanh: bật ``trace-cmd record -e sched`` hoặc
-   ``/sys/kernel/debug/sched/debug`` trước, thấy luồng chạy rồi mới mở code đối chiếu.
-   Đọc từ **hook → data → algorithm**, đừng đọc từ algorithm trước.
-
----
-
-.. rubric:: 4. Khung phân tích mọi Linux Kernel Module
+.. rubric:: 3. Khung phân tích mọi Linux Kernel Module
 
 Phần này là “kính lúp” dùng chung — bạn sẽ gặp lại nó ở Memory, Driver, Networking.
 Học một lần, tái dùng mọi nơi.
